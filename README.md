@@ -29,7 +29,7 @@ The heatmap of the fixation probabilities for various values of &eta;<sub>1</sub
 
 ![Figure 3](plots/difference_emp_theo_fix.jpg)
 
-Figure 4 (and Figure S10) can be recreated by running the following code:</br>
+Figure 4 can be recreated by running the following code:</br>
 
 <code>python scripts/assess_adjusted_fixation_probability.py -N 10000 -s 0.005 0.01 0.02 0.03 0.1 -n 100000 -o ./plots/ --threads 16</code>
 
@@ -49,7 +49,7 @@ The effect on the DFE conditioned on fixation (Figure 6) can be visualized by ru
 
 ![Figure 6](plots/dfe_normal_simulations.jpg)
 
-The script also generates Figures S15 & S16 by setting the `-b` and `-j` flags.
+The script also generates Figures S12 & S13 by setting the `-j` and `-b` flags.
 
 All other Supplementary Figures can be generated with the same commands but setting the <code>--recessive</code> or <code>--dominant</code>  flag in addition.
 

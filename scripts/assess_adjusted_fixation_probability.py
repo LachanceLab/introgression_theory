@@ -8,8 +8,6 @@ from matplotlib.lines import Line2D
 from fixation_probabilities import adjusted_probability_of_fixation, estimate_alpha
 from wright_fisher_models import wright_fisher, wright_fisher_fixation_prob
 import seaborn as sns
-from scipy.stats import linregress
-from matplotlib.colors import LinearSegmentedColormap
 from itertools import islice, takewhile, repeat
 import multiprocessing as mp
 
@@ -216,85 +214,6 @@ def explore_full_parameter_space(p0, nr_simulations, recessive, dominant, pars, 
     plt.close()
 
 
-def get_alpha_helper(args):
-    """
-    Helper function to compute alpha for different parameter combinations
-    @param args: list of tuples, [((chunk, recessive, dominant, h_range, d_range)] see conditions_alpha_greater_one for
-                                meaning of the parameters
-    @return: np.array, (h_range.shape[0], d_range.shape[0]) alpha values
-    """
-    chunks, recessive, dominant, h_range, d_range = args
-    alpha = np.zeros((h_range.shape[0], d_range.shape[0]))
-    for chunk in chunks:
-        h, d = chunk
-        alpha[np.where(h_range == h)[0], np.where(d_range == d)[0]] = estimate_alpha(h, d, recessive, dominant)
-    return alpha
-
-
-def conditions_alpha_greater_one(recessive, dominant, output, threads):
-    """
-    Find parameter combinations for which alpha is greater than one
-    @param recessive: boolean, if assuming recessive-dominance epistasis model
-    @param dominant: boolean, if assuming dominance-dominance epistasis model
-    @param output: str, directory where to save plots
-    @param threads: int, Number of CPUs
-    """
-    h_range = np.arange(0.0, 1.01, 0.01)
-    d_range = np.arange(-1.0, 0.01, 0.01)
-    d_range[-1] = 0.0
-    params = [(x, y) for x in h_range for y in d_range]
-    iterator = iter(params)
-    chunks = takewhile(bool, (list(islice(iterator, 4)) for _ in repeat(None)))
-    ready_to_map = [(chunk, recessive, dominant, h_range, d_range) for chunk in chunks]
-    pool = mp.Pool(processes=threads)
-    alpha = pool.map(get_alpha_helper, ready_to_map)
-    alpha = sum(alpha)
-    pool.close()
-    pool.join()
-    value_x = []
-    value_y = []
-    for i in range(h_range.shape[0]):
-        for j in range(d_range.shape[0]):
-            if alpha[i, j] <= 1.0:
-                continue
-            else:
-                value_x.append(d_range[j])
-                value_y.append(h_range[i])
-                break
-
-    # linear regression
-    value_x = np.abs(value_x)
-    reg = linregress(value_x, np.absolute(value_y))
-    print('Slope: {}, y-intercept: {:.4f}, R^2: {:.4f}, pval: {:.4f}'.format(reg.slope, reg.intercept,
-                                                                                 reg.rvalue, reg.pvalue))
-    fig, ax = plt.subplots()
-    alpha = np.where(alpha > 1, 1, 0)
-    colors = ["dimgrey", "cornflowerblue"]
-    cmap = LinearSegmentedColormap.from_list('Custom', colors, len(colors))
-    sns.heatmap(alpha, ax=ax, cmap=cmap, rasterized=True)
-    ax.invert_xaxis()
-    ax.invert_yaxis()
-    ax.plot(h_range[::-1] * h_range.shape[0], ((d_range * reg.slope)[::-1] * -d_range.shape[0]), color='black',
-            ls='--')
-    ax.set_xticklabels(["{:.2f}".format(l) for l in d_range[np.floor(ax.get_xticks()).astype(int)]], rotation=90)
-    ax.set_yticklabels(["{:.2f}".format(l) for l in h_range[np.floor(ax.get_yticks()).astype(int)]], rotation=0)
-    if recessive:
-        ax.set_xlabel(r'DMI effects ($\delta_{rd, 2}$)')
-    elif dominant:
-        ax.set_xlabel(r'DMI effects ($\delta_{dd, 1}$)')
-    else:
-        ax.set_xlabel(r'DMI effects ($\delta_{sd, 1}$)')
-    ax.set_ylabel(r'Heterosis effects ($\eta_1$)')
-    colorbar = ax.collections[0].colorbar
-    colorbar.set_ticks([0.25, 0.75])
-    colorbar.set_ticklabels([r'$\alpha \leq 1$', r'$\alpha > 1$'])
-    if recessive:
-        fig.savefig('{}binary_alpha_recessive.pdf'.format(output), dpi=600, bbox_inches='tight')
-    elif dominant:
-        fig.savefig('{}binary_alpha_dominant.pdf'.format(output), dpi=600, bbox_inches='tight')
-    else:
-        fig.savefig('{}binary_alpha_fix.pdf'.format(output), dpi=600, bbox_inches='tight')
-
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -329,7 +248,6 @@ def main(argv):
         output = args.output
     if args.recessive and args.dominant:
         raise AssertionError("Set either -r or -d flag, not both.")
-    conditions_alpha_greater_one(args.recessive, args.dominant, output, args.threads)
     plot_fixation_probabilities(p0, nr_simulations, args.selection_coefficients, args.recessive, args.dominant, pars,
                                 output, args.threads)
     if args.error:
