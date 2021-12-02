@@ -49,6 +49,7 @@ def dfe_normal_simulations(N, mean_normal, std_normal, recessive, dominant, thre
 
     # inset with original DFE
     inset = ax.inset_axes([0.59, 0.59, 0.4, 0.4])
+    inset.text(0.05, 0.9, 'original DFE', fontsize=8, transform=inset.transAxes)
     inset.hist(s_vals, histtype='step', color='black', bins=250, weights=np.full(s_vals.shape[0], 1 / s_vals.shape[0]))
     inset.axvline(0.0, ls='--', color='gray', lw=1)
     inset.set_ylabel(r'P(f(s))', fontsize=8)
@@ -71,7 +72,7 @@ def dfe_normal_simulations(N, mean_normal, std_normal, recessive, dominant, thre
             hist, bins, _ = ax.hist(fixed_s, bins=250, color=c, histtype='step',
                                     weights=np.full(fixed_s.shape[0], 1 / fixed_s.shape[0]),
                                     label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{sd, 1}=$' + str(round(d, 3)))
-        ax.text(0.6, 0.45 - i * 0.05, r'$\mu=$' + str(round(fixed_s.mean(), 4)), color=c, transform=ax.transAxes,
+        ax.text(0.6, 0.45 - i * 0.05, r'$\overline{s}=$' + str(round(fixed_s.mean(), 4)), color=c, transform=ax.transAxes,
                 fontsize=10)
 
     ax.set_xlabel('selection coefficient (s)', fontsize=10)
@@ -94,11 +95,6 @@ def dfe_joint_normal_simulations_helper(args):
     @return: int, fixation probability
     """
     iterations, pars, p0, recessive, dominant = args
-    # fixations = 0
-    # for i in range(iterations):
-    #     frequency = wright_fisher(p0, pars, recessive, dominant)
-    #     if frequency[-1] == 1.0:
-    #         fixations += 1
     p_fixation = wright_fisher_fixation_prob(int(p0 * 2 * pars['N']), pars, recessive, dominant, iterations)
 
     return p_fixation
@@ -214,8 +210,6 @@ def dfe_benefical_simulations_plotting_helper(fixed_s_values, recessive, dominan
                                                          max([max(x) for x in fixed_s_values if x.shape[0] > 0])),
                                                   weights=np.full(fixed_s_values[0].shape[0],
                                                                   1 / fixed_s_values[0].shape[0]))
-    # avoid 0 division
-    # hist_classical += 1
 
     for i, (fixed_s, h, d, c) in enumerate(zip(fixed_s_values, heterosis, dmis, colors)):
         if fixed_s.shape[0] == 0:
@@ -243,7 +237,7 @@ def dfe_benefical_simulations_plotting_helper(fixed_s_values, recessive, dominan
             else:
                 ax.plot(bins_classical[:-1] * N, hist, color=c,
                         label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{sd, 1}=$' + str(round(d, 3)))
-        ax.text(0.7, 0.45 - i * 0.05, r'$\mu=$' + str(round(fixed_s.mean() * N, 2)), color=c, transform=ax.transAxes,
+        ax.text(0.7, 0.45 - i * 0.05, r'$N_e\overline{s}=$' + str(round(fixed_s.mean() * N, 2)), color=c, transform=ax.transAxes,
                 fontsize=10)
     return ax
 
@@ -273,6 +267,7 @@ def dfe_beneficial_simulations(population_size, mean_exp, recessive, dominant,
                                                    dmis, colors, population_size, ax)
     # inset with original DFE
     inset = ax.inset_axes([0.59, 0.59, 0.4, 0.4])
+    inset.text(0.1, 0.9, 'original DFE', fontsize=8, transform=inset.transAxes)
     inset.hist(s_vals, histtype='step', color='black', bins=250, weights=np.full(s_vals.shape[0], 1 / s_vals.shape[0]))
     inset.set_ylabel(r'P(f(s))', fontsize=8)
     inset.set_xlabel(r's', fontsize=8, labelpad=2)
