@@ -146,6 +146,15 @@ def dfe_joint_normal_simulations(N, mean_normal, std_normal, recessive, dominant
         else:
             ax.plot(svals, p_fix_s, color=c,
                     label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{sd, 1}=$' + str(round(d, 3)))
+    # inset with original DFE
+    s_vals = normal.rvs(1000000)
+    inset = ax.inset_axes([0.65, 0.65, 0.34, 0.34])
+    inset.text(0.05, 0.9, 'original DFE', fontsize=7, transform=inset.transAxes)
+    inset.hist(s_vals, histtype='step', color='black', bins=250, weights=np.full(s_vals.shape[0], 1 / s_vals.shape[0]))
+    inset.set_ylabel(r'P(f(s))', fontsize=8)
+    inset.set_xlabel(r's', fontsize=8, labelpad=2)
+    inset.tick_params(axis='x', labelsize=6)
+    inset.tick_params(axis='y', labelsize=6)
     ax.set_xlabel('selection coefficient (s)')
     ax.set_ylabel(r'P(f(s), u(s))')
     ax.legend(bbox_to_anchor=(0.5, -.14), loc='upper center', ncol=2)
