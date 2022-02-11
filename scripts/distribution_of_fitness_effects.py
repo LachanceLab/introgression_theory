@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
@@ -71,7 +71,7 @@ def dfe_normal_simulations(N, mean_normal, std_normal, recessive, dominant, thre
         else:
             hist, bins, _ = ax.hist(fixed_s, bins=250, color=c, histtype='step',
                                     weights=np.full(fixed_s.shape[0], 1 / fixed_s.shape[0]),
-                                    label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{sd, 1}=$' + str(round(d, 3)))
+                                    label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{1}=$' + str(round(d, 3)))
         ax.text(0.6, 0.45 - i * 0.05, r'$\overline{s}=$' + str(round(fixed_s.mean(), 4)), color=c, transform=ax.transAxes,
                 fontsize=10)
 
@@ -145,7 +145,7 @@ def dfe_joint_normal_simulations(N, mean_normal, std_normal, recessive, dominant
                     label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{dd, 1}=$' + str(round(d, 3)))
         else:
             ax.plot(svals, p_fix_s, color=c,
-                    label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{sd, 1}=$' + str(round(d, 3)))
+                    label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{1}=$' + str(round(d, 3)))
     # inset with original DFE
     s_vals = normal.rvs(1000000)
     inset = ax.inset_axes([0.65, 0.65, 0.34, 0.34])
@@ -232,7 +232,7 @@ def dfe_benefical_simulations_plotting_helper(fixed_s_values, recessive, dominan
                         label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{dd, 1}=$' + str(round(d, 3)))
             else:
                 ax.plot(bins_classical[:-1] * N, hist_classical, color=c,
-                        label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{sd, 1}=$' + str(round(d, 3)))
+                        label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{1}=$' + str(round(d, 3)))
         else:
             hist, bins = np.histogram(fixed_s, bins=bins_classical,
                                       weights=np.full(fixed_s.shape[0], 1 / fixed_s.shape[0]))
@@ -245,7 +245,7 @@ def dfe_benefical_simulations_plotting_helper(fixed_s_values, recessive, dominan
                         label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{dd, 1}=$' + str(round(d, 3)))
             else:
                 ax.plot(bins_classical[:-1] * N, hist, color=c,
-                        label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{sd, 1}=$' + str(round(d, 3)))
+                        label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{1}=$' + str(round(d, 3)))
         ax.text(0.7, 0.45 - i * 0.05, r'$N_e\overline{s}=$' + str(round(fixed_s.mean() * N, 2)), color=c, transform=ax.transAxes,
                 fontsize=10)
     return ax

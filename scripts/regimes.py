@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys
 import argparse
 import matplotlib.pyplot as plt
@@ -68,7 +68,7 @@ def plot_regimes(params, s, recessive, dominant, output):
         elif dominant:
             title_str += r'($\eta_1=$' + str(round(h, 2)) + r', $\delta_{dd, 1}=$' + str(round(d, 2)) + r'; $\alpha=$' + str(round(alpha, 3)) + ")"
         else:
-            title_str += r'($\eta_1=$' + str(round(h, 2)) + r', $\delta_{sd, 1}=$' + str(round(d, 2)) + r'; $\alpha=$' + str(round(alpha, 3)) + ")"
+            title_str += r'($\eta_1=$' + str(round(h, 2)) + r', $\delta_{1}=$' + str(round(d, 2)) + r'; $\alpha=$' + str(round(alpha, 3)) + ")"
         ax[i // 2, i % 2].set_title(title_str, fontsize=10)
         ax[i // 2, i % 2].text(-.1, 1.05, str(alphabet[n_plot]), transform=ax[i // 2, i % 2].transAxes,
                                weight='bold', fontsize=12)

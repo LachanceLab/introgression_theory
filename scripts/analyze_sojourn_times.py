@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys
 import argparse
 import os
@@ -91,7 +91,7 @@ def compare_sojourn_times(p0, nr_simulations, params, recessive, dominant, pars,
             title_str += r'($\eta_1=$' + str(round(pars['h'], 2)) + r', $\delta_{dd, 1}=$' + str(round(pars['d'], 2)) +\
                          ')'
         else:
-            title_str += r'($\eta_1=$' + str(round(pars['h'], 2)) + r', $\delta_{sd, 1}=$' + str(round(pars['d'], 2)) +\
+            title_str += r'($\eta_1=$' + str(round(pars['h'], 2)) + r', $\delta_{1}=$' + str(round(pars['d'], 2)) +\
                          ')'
         ax.set_title(title_str, x=1.3, fontsize=10)
         kwargs = dict(transform=ax.transAxes, clip_on=False)

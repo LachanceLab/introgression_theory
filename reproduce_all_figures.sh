@@ -7,44 +7,47 @@ threads=${1:-$default_threads}
 # Figure 2
 python scripts/regimes.py
 
-# Figure 3
-python scripts/assess_impact_on_fixation_probability.py -t ${threads}
+# Figure 3 (and S2)
+python scripts/assess_adjusted_fixation_probability.py -t ${threads} --neutral
 
-# Figure 4 (and S9 & S10)
-python scripts/assess_adjusted_fixation_probability.py -t ${threads} -e
+# Figure 4
+python scripts/assess_impact_on_fixation_probability.py -t ${threads}
 
 # Figure 5
 python scripts/analyze_sojourn_times.py
 
-# Figure 6 (and S15 & S16)
+# Figure 6 (and S3 & S4)
 python scripts/distribution_of_fitness_effects.py -t ${threads} -b -j
 
-# Figure S3
+# Figure S1
+python scripts/site_frequency_spectrum.py
+
+# Figure S7
 python scripts/regimes.py -r
 
-# Figure S4
+# Figure S8
 python scripts/regimes.py -d
 
-# Figure S5
-python scripts/assess_impact_on_fixation_probability.py -r -t ${threads}
-
-# Figure S6
-python scripts/assess_impact_on_fixation_probability.py -d -t ${threads}
-
-# Figures S7 & S11
+# Figures 9
 python scripts/assess_adjusted_fixation_probability.py -r -t ${threads}
 
-# Figures S8 & 12
+# Figures S10
 python scripts/assess_adjusted_fixation_probability.py --dominant -t ${threads}
 
+# Figure S11
+python scripts/assess_impact_on_fixation_probability.py -r -t ${threads}
+
+# Figure S12
+python scripts/assess_impact_on_fixation_probability.py -d -t ${threads}
+
 # Figure S13
-python scripts/analyze_sojourn_times.py -r
-
-# Figure S14
-python scripts/analyze_sojourn_times.py -d
-
-# Figure S17
 python scripts/distribution_of_fitness_effects.py -r -t ${threads}
 
-# Figure S18
-python scripts/distribution_of_fitness_effects.py -d -t ${threads}
+# Figure S14
+python scripts/distibution_of_fitness_effects.py -d -t ${threads}
+
+# Figure S15
+python scripts/analyze_sojourn_times.py -r
+
+# Figure S16
+python scripts/analyze_sojourn_times.py -d
