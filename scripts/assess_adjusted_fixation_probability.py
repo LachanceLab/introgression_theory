@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from matplotlib.lines import Line2D
-from fixation_probabilities import adjusted_probability_of_fixation_diffusion_approximation, estimate_alpha,\
-    adjusted_fixation_probability_homogeneous_branching_process,\
+from fixation_probabilities import adjusted_probability_of_fixation_diffusion_approximation, estimate_alpha, \
     adjusted_fixation_probability_heterogeneous_branching_process
 from wright_fisher_models import wright_fisher, wright_fisher_fixation_prob
 from itertools import islice, takewhile, repeat
@@ -42,7 +41,8 @@ def assess_fixation_probability_helper(args):
         emp_fix[np.where(val_range == val)[0]] = emp_p_fixation
         alpha = estimate_alpha(pars['h'], pars['d'], recessive, dominant)
         theo_p_fixation_da = adjusted_probability_of_fixation_diffusion_approximation(pars['N'], pars['s'], p0, alpha)
-        theo_p_fixation_bp = adjusted_fixation_probability_homogeneous_branching_process(pars['s'], alpha)
+        theo_p_fixation_bp = adjusted_fixation_probability_heterogeneous_branching_process(pars, recessive=recessive,
+                                                                                           dominant=dominant)
         theo_fix_da[np.where(val_range == val)[0]] = theo_p_fixation_da
         theo_fix_bp[np.where(val_range == val)[0]] = theo_p_fixation_bp
 
@@ -85,7 +85,8 @@ def plot_fixation_probabilities(p0, nr_simulations, values_s, recessive, dominan
         pool.close()
         pool.join()
         ax[0].plot(h_range, theo_fix_da, ls=':', color=c)
-        ax[0].plot(h_range, theo_fix_bp, ls='--', color=c)
+        if s > 0:
+            ax[0].plot(h_range, theo_fix_bp, ls='--', color=c)
         ax[0].scatter(h_range[::4], emp_fix[::4], marker=marker, label='s={:.3f}'.format(s),
                       color=c)
     ax[0].text(-0.1, 1.05, 'A', transform=ax[0].transAxes, fontsize=12, weight='bold')
@@ -96,8 +97,8 @@ def plot_fixation_probabilities(p0, nr_simulations, values_s, recessive, dominan
     handles, labels = ax[0].get_legend_handles_labels()
     handles.insert(1, Line2D([], [], marker='o', markerfacecolor='none', markeredgecolor='none', ls=''))
     labels.insert(1, '')
-    ax[0].legend(handles, labels, loc='upper center', bbox_to_anchor=(1.05, -.14), ncol=len(values_s), labelspacing=1,
-                 columnspacing=1, handletextpad=0.5)
+    ax[0].legend(handles, labels, loc='upper center', bbox_to_anchor=(1.05, -.14), ncol=len(values_s), labelspacing=2,
+                 columnspacing=2, handletextpad=0.5)
 
     pars['h'] = heterosis_effects
     d_range = np.arange(-1.0, 0.025, 0.025)
@@ -208,58 +209,12 @@ def fixation_probabilities_neutral_alleles(N, nr_simulations, recessive, dominan
         fig.savefig(f'{output}fixation_probability_neutral.pdf', bbox_inches='tight', dpi=600)
 
 
-def compare_homogeneous_and_heterogeneous_bp(pars, output_dir, recessive, dominant):
-    """
-    Plot Site frequency spectrum of allele at different times comparing homogenous and heterogenous branching process
-    @param pars: dict, parameters for simulations [initial strength of heterosis effects ['h'] and DMI effects ['d'],
-                     selection coefficient ['s'], and population size ['N']
-    @param output_dir: str, output directory
-    @param recessive: boolean, if recessive-dominance epistasis model should be assumed for DMI effects
-    @param dominant: boolean, if dominance-dominance epistasis model should be assumed for DMI effects
-    """
-    heterosis_effects = [0.8, 0.4, 0, 0.8,  0, 0]
-    dmi_effects = [0, 0, 0, -0.8, -0.4, -0.8]
-    colors = ["blue", "cornflowerblue", "deepskyblue", "darkorange", "orangered", 'red']
-    fig, ax = plt.subplots()
-    ax.plot([0, 1], [0, 1], ls='--', color='black')
-    max_pfix = 0
-    all_pfix_hetero = []
-    all_pfix_homo = []
-    for h, d, c in zip(heterosis_effects, dmi_effects, colors):
-        pars['h'] = h
-        pars['d'] = d
-        alpha = estimate_alpha(pars['h'], pars['d'], False, False)
-        pfix_heterogeneous = adjusted_fixation_probability_heterogeneous_branching_process(pars, recessive=recessive,
-                                                                                           dominant=dominant)
-        all_pfix_hetero.append(pfix_heterogeneous)
-        pfix_homogeneous = adjusted_fixation_probability_homogeneous_branching_process(pars['s'], alpha)
-        all_pfix_homo.append(pfix_homogeneous)
-        ax.scatter(pfix_heterogeneous, pfix_homogeneous, color=c,
-                   label=r'$\eta_1=$' + str(round(h, 3)) + r', $\delta_{1}=$' + str(round(d, 3)))
-        if max([pfix_homogeneous, pfix_heterogeneous]) > max_pfix:
-            max_pfix = max([pfix_homogeneous, pfix_heterogeneous])
-    rmse = (sum((np.array(all_pfix_hetero) - np.array(all_pfix_homo)) ** 2) / len(all_pfix_hetero)) ** 1/2
-    print("Heterogeneous vs. homogeneous branching process")
-    print("RMSE: {}".format(rmse))
-    ax.set_xlim([0, max_pfix + 0.01])
-    ax.set_ylim(0, max_pfix + 0.01)
-    ax.legend(bbox_to_anchor=(0.5, -.15), ncol=2, loc='upper center')
-    ax.set_xlabel(r'$p_{fix}$ time-heterogeneous BP')
-    ax.set_ylabel(r'$p_{fix}$ time-homogeneous BP')
-    if recessive:
-        fig.savefig(f'{output_dir}comparison_wab_vs_compounded_recessive.pdf', bbox_inches='tight', dpi=600)
-    elif dominant:
-        fig.savefig(f'{output_dir}comparison_wab_vs_compounded_dominant.pdf', bbox_inches='tight', dpi=600)
-    else:
-        fig.savefig(f'{output_dir}comparison_wab_vs_compounded.pdf', bbox_inches='tight', dpi=600)
-
-
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-N', '--population_size', help='Population size, default=10000', type=int, default=10000)
     parser.add_argument('-s', '--selection_coefficients', help='Values for s to try, at most 5.'
                                                                'Enter separated by a space. Default=0 0.005 0.01 0.02 0.03 0.1',
-                        nargs='+', action='store', type=float, default=[0, 0.005, 0.01, 0.02, 0.03, 0.1])
+                        nargs='+', action='store', type=float, default=[0.005, 0.01, 0.02, 0.03, 0.1])
     parser.add_argument('-n', '--number_simulations', help='Number of simulations to run, default=100000',
                         default=100000, type=int)
     parser.add_argument('-r', '--recessive', help='DMIs due to recessive-dominant epistasis; default=False',
@@ -271,8 +226,6 @@ def main(argv):
     parser.add_argument('-t', '--threads', help='Number of CPUs, default=16', default=16, type=int)
     parser.add_argument('--neutral', help="Assess adjusted fixation probabilities of neutral alleles",
                         action='store_true', default=False)
-    parser.add_argument('-c', '--compare_hom_het_bp', help='Compare heterogeneous and homogeneous branching process',
-                        action='store_true')
     args = parser.parse_args()
     # set parameters
     pars = dict()
@@ -295,9 +248,6 @@ def main(argv):
     if args.neutral:
         fixation_probabilities_neutral_alleles(pars['N'], nr_simulations, args.recessive, args.dominant, output,
                                                args.threads)
-    if args.compare_hom_het_bp:
-        pars['s'] = 0.01
-        compare_homogeneous_and_heterogeneous_bp(pars, output, recessive=args.recessive, dominant=args.dominant)
 
 
 if __name__ == '__main__':

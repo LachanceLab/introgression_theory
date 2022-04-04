@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
 from wright_fisher_models import wright_fisher, standard_wright_fisher
+from fixation_probabilities import estimate_alpha
+import multiprocessing as mp
 
 
 def compare_sojourn_times(p0, nr_simulations, params, recessive, dominant, pars, output):
@@ -130,6 +132,69 @@ def compare_sojourn_times(p0, nr_simulations, params, recessive, dominant, pars,
         fig.savefig("{}sojourn_times.pdf".format(output), dpi=600, bbox_inches='tight')
 
 
+def mean_extinction_time_helper(args):
+    """
+    Helper function for multiprocessing the calculation of mean extinction times under different scenarios
+    @param args: tuple, paramters for simulations (initial allele frequency, parameter dict (Ne, s etc.), recessive,
+                        dominant, and number of simulations)
+    @return: list, containing extinction times
+    """
+    p0, pars, recessive, dominant, nr_simulations = args
+    extinction_time = []
+    for y in range(nr_simulations):
+        frequency = wright_fisher(p0, pars, recessive, dominant)
+        if frequency[-1] == 0.0:
+            extinction_time.append(len(frequency) - 1)
+    return extinction_time
+
+
+def extinction_times_as_function_of_alpha_and_s(p0, nr_simulations, params, recessive, dominant, pars, output, threads):
+    """
+    Compare sojourn times under our model with sojourn times under classical model.
+    If both recessive and dominance are False the semidominance-dominance epistasis model is assumed for DMI effects
+    :param p0: float, initial allele frequency
+    :param nr_simulations: int, number of simulations to run
+    :param params: list, list of tuples with initial values for heterosis and DMI effects
+    :param recessive: boolean, whether to assume recessive-dominance epistasis model for DMI effects
+    :param dominant: boolean, whether to assume dominance-dominance epistasis model for DMI effects
+    :param pars: dict, parameters for WF model
+    :param output: str, output directory
+    :param thread: int, number of threads to use for multiprocessing
+    """
+    fig, ax = plt.subplots()
+    s_vals = [0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1]
+    for i, param in enumerate(params):
+        pars['h'] = param[0]
+        pars['d'] = param[1]
+        mean_extinction_times = []
+
+        for s in s_vals:
+            pars['s'] = s
+            # multi process
+            ready_to_map = [(p0, pars, recessive, dominant, nr_simulations // threads) for i in range(threads)]
+            ready_to_map.append((p0, pars, recessive, dominant, nr_simulations % threads))
+            pool = mp.Pool(processes=threads)
+            results = pool.map(mean_extinction_time_helper, ready_to_map)
+            extinction_times = np.concatenate(results)
+            mean_extinction_times.append(np.mean(extinction_times))
+            # close pool
+            pool.close()
+            pool.join()
+        alpha = estimate_alpha(pars['h'], pars['d'], recessive, dominant)
+        ax.plot(s_vals, mean_extinction_times, label=r'$\alpha=$' + '{:.2f}'.format(alpha), marker='o')
+
+    ax.legend(bbox_to_anchor=(0.5, -.14), ncol=len(params), loc='upper center')
+    ax.set_xlabel('s')
+    ax.set_ylabel("Mean extinction time in generations")
+
+    if recessive:
+        fig.savefig("{}mean_extinction_times_recessive.pdf".format(output), dpi=600, bbox_inches='tight')
+    elif dominant:
+        fig.savefig("{}mean_extinction_times_dominant.pdf".format(output), dpi=600, bbox_inches='tight')
+    else:
+        fig.savefig("{}mean_extinction_times.pdf".format(output), dpi=600, bbox_inches='tight')
+
+
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--params', help='Parameter space for initial strength of heterosis and DMI effects.'
@@ -148,6 +213,7 @@ def main(argv):
                         default=False, action='store_true')
     parser.add_argument('-o', '--output', help='Output directory. Will create a sojourn_times.pdf file in this ' +
                                                'directory, default=./plots', default='./plots/')
+    parser.add_argument('-t', '--threads', help='Number of threads to use. [16]', default=16, type=int)
     args = parser.parse_args()
     pars = dict()
     pars['s'] = args.selection_coefficient
@@ -166,6 +232,8 @@ def main(argv):
     if args.recessive and args.dominant:
         raise AssertionError("Set either -r or -d flag, not both.")
     compare_sojourn_times(p0, nr_simulations, params, args.recessive, args.dominant, pars, output)
+    extinction_times_as_function_of_alpha_and_s(p0, nr_simulations, params, args.recessive, args.dominant, pars, output,
+                                                args.threads)
 
 
 if __name__ == '__main__':

@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from scipy.stats import linregress
-from fixation_probabilities import standard_probability_of_fixation, adjusted_fixation_probability_homogeneous_branching_process,\
-    estimate_alpha
+from fixation_probabilities import standard_probability_of_fixation, \
+    adjusted_fixation_probability_heterogeneous_branching_process
 from wright_fisher_models import wright_fisher_poisson_decay_hfe, wright_fisher_fixation_prob
 from itertools import islice, takewhile, repeat
 import multiprocessing as mp
@@ -25,8 +25,7 @@ def calculate_fixation_probabilities_helper(args):
     p_fix_array = np.zeros((h_range.shape[0], d_range.shape[0]))
     for chunk in chunks:
         pars['h'], pars['d'] = chunk
-        alpha = estimate_alpha(pars['h'], pars['d'], recessive, dominant)
-        p_fixation = adjusted_fixation_probability_homogeneous_branching_process(pars['s'], alpha)
+        p_fixation = adjusted_fixation_probability_heterogeneous_branching_process(pars, recessive=recessive, dominant=dominant)
         p_fix_array[np.where(h_range == pars['h'])[0],
                     np.where(d_range == pars['d'])[0]] = p_fixation
     return p_fix_array
