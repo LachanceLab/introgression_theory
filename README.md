@@ -2,6 +2,11 @@
 
 <p><strong>Abstract</strong> Hybridization is a common occurrence in natural populations, and introgression is a major source of genetic variation. Despite the evolutionary importance of adaptive introgression, classical population genetics theory does not take into account hybrid fitness effects (HFEs). Specifically, heterosis (i.e., hybrid vigor) and Dobzhansky-Muller incompatibilities (DMIs) influence the fates of introgressed alleles. Here, we explicitly account for polygenic, unlinked HFEs when tracking an introgressed marker allele. These HFEs quickly decay over time due to repeated backcrossing, enabling a separation-of-timescales approach. Using diffusion and branching process theory in combination with computer simulations, we formalize the intuition behind how HFEs affect introgressed alleles. We find that HFEs can significantly hinder or boost the fixation probability of introgressed alleles, depending on the relative strength of heterosis and DMIs effects. We show that the inclusion of a correction factor (&alpha;, representing the compounded effects of HFEs over time) into classic population genetics theory yields accurate fixation probabilities. Despite having a strong impact on the probability of fixation, HFEs only subtly change the distribution of fitness effects of introgressed alleles that reach fixation. Although strong DMI effects may expedite the loss of introgressed alleles, fixation times are largely unchanged by HFEs.</p>
 
+#### Citation
+Aaron Pfennig, Joseph Lachance, Hybrid fitness effects modify fixation probabilities of introgressed alleles, G3 Genes|Genomes|Genetics, 2022;, jkac113, https://doi.org/10.1093/g3journal/jkac113
+
+#### Software requirements
+
 <p>Below we provide instruction on how to reproduce the figures shown in the text.
 To run the following scripts, you will need to have <em>numpy (v=1.20.2)</em>, <em>scipy (v=1.6.3)</em>, <em>matplotlib (v=3.3.4)</em>, <em>mpl-axes-aligner (v=1.1)</em>, <em>seaborn (v=0.11.1)</em>, and <em>multiprocess (v=0.70.12)</em> installed.
 They can also be installed from the provided environment.yml file using conda:<br>
@@ -12,6 +17,8 @@ This will create a new conda environment named *introgression*. Activate the env
 
 <code>conda activate introgression</code><br>
 
+ #### Reproducing the figures in the manuscript 
+ 
 The parameters used in the publication are set as default, and scripts can be run without specifying them.
 They are specified here for illustrative purposes only. Due to stochasticity some figures may slightly differ between runs,</p>
 
